@@ -16,5 +16,7 @@ def PrintDetail(func):
 def func():
     '''print 2**10
     '''
-    # print func.__name__
+
     print 2**10
+func()
+func()

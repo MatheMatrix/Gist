@@ -4,6 +4,7 @@
 
 
 def deco(func):
+    print 'Here'
     def _deco():
         print("before myfunc() called.")
         func()

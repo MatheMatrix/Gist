@@ -14,9 +14,10 @@ def PrintDetail(func):
     return _PrintDetail
 
 @PrintDetail
-def func():
+def calc():
     '''print 2**10
     '''
 
     print 2**10
 
+calc()
