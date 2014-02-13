@@ -15,7 +15,7 @@ chkconfig ntpd on
 
 # mysql
 yum install -y mysql mysql-server MySQL-python
-sed '2 ibind-address = conntroller' -i /etc/my.cnf
+sed '2 ibind-address = controller' -i /etc/my.cnf
 service mysqld start
 chkconfig mysqld on
 mysql_install_db
