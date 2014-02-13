@@ -75,6 +75,12 @@ keystone endpoint-create \
   --internalurl=http://controller:5000/v2.0 \
   --adminurl=http://controller:35357/v2.0
 
+# make keystonerc
+echo "export OS_USERNAME=admin
+export OS_PASSWORD=123456
+export OS_TENANT_NAME=admin
+export OS_AUTH_URL=http://controller:35357/v2.0" > ~/keystonerc
+
 # Glance-install
 yum install -y openstack-glance
 
