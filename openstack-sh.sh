@@ -6,7 +6,7 @@ service network start
 chkconfig NetworkManager off
 chkconfig network on
 
-hostname controller
+hostname localhost
 
 # ntp
 yum -y install ntp
@@ -65,3 +65,154 @@ keystone role-create --name=admin
 keystone user-role-add --user=admin --tenant=admin --role=admin
 
 keystone user-role-add --user=admin --tenant=admin --role=_member_
+
+keystone service-create --name=keystone --type=identity \
+  --description="Keystone Identity Service"
+
+keystone endpoint-create \
+  --service-id=$(keystone service-list | awk '/ identity / {print $2}') \
+  --publicurl=http://localhost:5000/v2.0 \
+  --internalurl=http://localhost:5000/v2.0 \
+  --adminurl=http://localhost:35357/v2.0
+
+# Glance-install
+yum install -y openstack-glance
+
+openstack-config --set /etc/glance/glance-api.conf \
+   DEFAULT sql_connection mysql://root:123456@localhost/glance
+openstack-config --set /etc/glance/glance-registry.conf \
+   DEFAULT sql_connection mysql://root:123456@localhost/glance
+
+openstack-db --init --service glance --password 123456
+
+keystone user-create --name=glance --pass=123456 \
+ --email=glance@example.com
+keystone user-role-add --user=glance --tenant=service --role=admin
+
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken \
+ auth_uri http://localhost:5000
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken \
+ auth_host localhost
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken \
+ admin_tenant_name service
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken \
+ admin_user glance
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken \
+ admin_password 123456
+openstack-config --set /etc/glance/glance-api.conf paste_deploy \
+ flavor keystone
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken \
+ auth_uri http://localhost:5000
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken \
+ auth_host localhost
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken \
+ admin_tenant_name service
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken \
+ admin_user glance
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken \
+ admin_password 123456
+openstack-config --set /etc/glance/glance-registry.conf paste_deploy \
+ flavor keystone
+
+sed '/auth_token:filter_factory/a\
+auth_host=localhost\
+admin_user=glance\
+admin_tenant_name=service\
+admin_password=123456' -i /usr/share/glance/glance-api-dist-paste.ini
+
+sed '/auth_token:filter_factory/a\
+auth_host=localhost\
+admin_user=glance\
+admin_tenant_name=service\
+admin_password=123456' -i /usr/share/glance/glance-registry-dist-paste.ini
+
+cp /usr/share/glance/glance-api-dist-paste.ini /etc/glance/glance-api-paste.ini
+cp /usr/share/glance/glance-registry-dist-paste.ini /etc/glance/glance-registry-paste.ini
+
+keystone service-create --name=glance --type=image \
+  --description="Glance Image Service"
+
+keystone endpoint-create \
+  --service-id=$(keystone service-list | awk '/ image / {print $2}') \
+  --publicurl=http://localhost:9292 \
+  --internalurl=http://localhost:9292 \
+  --adminurl=http://localhost:9292
+
+service openstack-glance-api start
+service openstack-glance-registry start
+chkconfig openstack-glance-api on
+chkconfig openstack-glance-registry on
+
+# Nova-controller-install
+yum install -y openstack-nova python-novaclient
+
+openstack-config --set /etc/nova/nova.conf \
+  database connection mysql://root:123456@localhost/nova
+
+openstack-config --set /etc/nova/nova.conf \
+  DEFAULT rpc_backend nova.openstack.common.rpc.impl_qpid
+openstack-config --set /etc/nova/nova.conf DEFAULT qpid_hostname localhost
+
+openstack-db --init --service nova --password 123456
+
+openstack-config --set /etc/nova/nova.conf DEFAULT my_ip 127.0.0.1
+openstack-config --set /etc/nova/nova.conf DEFAULT vncserver_listen 127.0.0.1
+openstack-config --set /etc/nova/nova.conf DEFAULT vncserver_proxyclient_address 127.0.0.1
+
+keystone user-create --name=nova --pass=123456 --email=nova@example.com
+keystone user-role-add --user=nova --tenant=service --role=admin
+
+openstack-config --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_host localhost
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_protocol http
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_port 35357
+openstack-config --set /etc/nova/nova.conf keystone_authtoken admin_user nova
+openstack-config --set /etc/nova/nova.conf keystone_authtoken admin_tenant_name service
+openstack-config --set /etc/nova/nova.conf keystone_authtoken admin_password 123456
+
+sed '/auth_token:filter_factory/a\
+auth_host = localhost\
+auth_port = 35357\
+auth_protocol = http\
+auth_uri = http://localhost:5000/v2.0\
+admin_tenant_name = service\
+admin_user = nova\
+admin_password = 123456' -i /etc/nova/api-paste.ini
+
+keystone service-create --name=nova --type=compute \
+  --description="Nova Compute service"
+
+keystone endpoint-create \
+  --service-id=$(keystone service-list | awk '/ compute / {print $2}') \
+  --publicurl=http://localhost:8774/v2/%\(tenant_id\)s \
+  --internalurl=http://localhost:8774/v2/%\(tenant_id\)s \
+  --adminurl=http://localhost:8774/v2/%\(tenant_id\)s
+
+service openstack-nova-api start
+service openstack-nova-cert start
+service openstack-nova-consoleauth start
+service openstack-nova-scheduler start
+service openstack-nova-conductor start
+service openstack-nova-novncproxy start
+chkconfig openstack-nova-api on
+chkconfig openstack-nova-cert on
+chkconfig openstack-nova-consoleauth on
+chkconfig openstack-nova-scheduler on
+chkconfig openstack-nova-conductor on
+chkconfig openstack-nova-novncproxy on
+
+# Nova-compute-install
+
+openstack-config --set /etc/nova/nova.conf \
+  DEFAULT novncproxy_base_url http://localhost:6080/vnc_auto.html
+
+openstack-config --set /etc/nova/nova.conf DEFAULT glance_host localhost
+
+openstack-config --set /etc/nova/nova.conf DEFAULT libvirt_type qemu
+
+service libvirtd start
+service messagebus start
+chkconfig libvirtd on
+chkconfig messagebus on
+service openstack-nova-compute start
+chkconfig openstack-nova-compute on

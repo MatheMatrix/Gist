@@ -60,6 +60,9 @@ parser.add_option("-v", dest="verbose", action="store_true",
 
 opts, args = parser.parse_args()
 
+print opts, '\n', args
+print type(opts), type(args)
+
 if opts.verbose:
   enable("qpid", DEBUG)
 else:
@@ -118,6 +121,7 @@ try:
       name, val = nameval(p)
       msg.properties[name] = val
 
+    #print 'conn.__dict:', conn.__dict__
     snd.send(msg)
     count += 1
     print msg
