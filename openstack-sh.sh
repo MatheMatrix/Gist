@@ -15,7 +15,7 @@ chkconfig ntpd on
 
 # mysql
 yum install -y mysql mysql-server MySQL-python
-sed '2 ibind-address = 127.0.0.1' -i /etc/my.cnf
+sed '2 ibind-address = conntroller' -i /etc/my.cnf
 service mysqld start
 chkconfig mysqld on
 mysql_install_db
@@ -155,9 +155,9 @@ openstack-config --set /etc/nova/nova.conf DEFAULT qpid_hostname controller
 
 openstack-db --init --service nova --password 123456
 
-openstack-config --set /etc/nova/nova.conf DEFAULT my_ip 127.0.0.1
-openstack-config --set /etc/nova/nova.conf DEFAULT vncserver_listen 127.0.0.1
-openstack-config --set /etc/nova/nova.conf DEFAULT vncserver_proxyclient_address 127.0.0.1
+openstack-config --set /etc/nova/nova.conf DEFAULT my_ip controller
+openstack-config --set /etc/nova/nova.conf DEFAULT vncserver_listen controller
+openstack-config --set /etc/nova/nova.conf DEFAULT vncserver_proxyclient_address controller
 
 keystone user-create --name=nova --pass=123456 --email=nova@example.com
 keystone user-role-add --user=nova --tenant=service --role=admin
