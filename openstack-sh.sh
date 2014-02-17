@@ -237,7 +237,7 @@ CACHES = {\
 }/}" /etc/openstack-dashboard/local_settings
 
 sed -i "s/ALLOWED_HOSTS = \['horizon.example.com', 'localhost'\]/\
-ALLOWED_HOSTS = ['localhost', 'my-desktop']/g" /etc/openstack-dashboard/local_settings
+ALLOWED_HOSTS = ['localhost', 'my-desktop', 'controller']/g" /etc/openstack-dashboard/local_settings
 
 sed -i 's/OPENSTACK_HOST = "127.0.0.1"/\
 OPENSTACK_HOST = "controller"/g' /etc/openstack-dashboard/local_settings
