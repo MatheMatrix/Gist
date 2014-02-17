@@ -223,3 +223,28 @@ chkconfig libvirtd on
 chkconfig messagebus on
 service openstack-nova-compute start
 chkconfig openstack-nova-compute on
+
+# Horizon-install
+
+yum install -y memcached python-memcached mod_wsgi openstack-dashboard
+
+sed -i "/^CACHES = {/{N;N;N;N;s/.*/\
+CACHES = {\
+   'default': {\
+       'BACKEND' : 'django.core.cache.backends.memcached.MemcachedCache',\
+       'LOCATION' : '127.0.0.1:11211',\
+   }\
+}/}" /etc/openstack-dashboard/local_settings
+
+sed -i "s/ALLOWED_HOSTS = \['horizon.example.com', 'localhost'\]/\
+ALLOWED_HOSTS = ['localhost', 'my-desktop']/g" /etc/openstack-dashboard/local_settings
+
+sed -i 's/OPENSTACK_HOST = "127.0.0.1"/\
+OPENSTACK_HOST = "controller"/g' /etc/openstack-dashboard/local_settings
+
+setsebool httpd_can_network_connect on
+
+service httpd start
+service memcached start
+chkconfig httpd on
+chkconfig memcached on
