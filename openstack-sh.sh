@@ -261,3 +261,40 @@ openstack-config --set /etc/cinder/cinder.conf \
 keystone user-create --name=cinder --pass=123456 --email=cinder@example.com
 keystone user-role-add --user=cinder --tenant=service --role=admin
 
+sed '/auth_token:filter_factory/a\
+auth_host = controller\
+auth_port = 35357\
+auth_protocol = http\
+auth_uri = http://controller:5000/\
+admin_tenant_name = service\
+admin_user = cinder\
+admin_password = 123456' -i /etc/cinder/api-paste.ini
+
+openstack-config --set /etc/cinder/cinder.conf \
+  DEFAULT rpc_backend cinder.openstack.common.rpc.impl_qpid
+
+openstack-config --set /etc/cinder/cinder.conf \
+  DEFAULT qpid_hostname controller
+
+keystone service-create --name=cinder --type=volume \
+  --description="Cinder Volume Service"
+
+keystone endpoint-create \
+  --service-id=$(keystone service-list | awk '/ volume / {print $2}') \
+  --publicurl=http://controller:8776/v1/%\(tenant_id\)s \
+  --internalurl=http://controller:8776/v1/%\(tenant_id\)s \
+  --adminurl=http://controller:8776/v1/%\(tenant_id\)s
+
+keystone service-create --name=cinderv2 --type=volumev2 \
+  --description="Cinder Volume Service V2"
+
+keystone endpoint-create \
+  --service-id=$(keystone service-list | awk '/ volumev2 / {print $2}') \
+  --publicurl=http://controller:8776/v2/%\(tenant_id\)s \
+  --internalurl=http://controller:8776/v2/%\(tenant_id\)s \
+  --adminurl=http://controller:8776/v2/%\(tenant_id\)s
+
+service openstack-cinder-api start
+service openstack-cinder-scheduler start
+chkconfig openstack-cinder-api on
+chkconfig openstack-cinder-scheduler on
