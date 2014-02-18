@@ -251,12 +251,14 @@ service memcached start
 chkconfig httpd on
 chkconfig memcached on
 
-# Cinder-install
+# Cinder-server-install
 
 yum -y install openstack-cinder
 
 openstack-config --set /etc/cinder/cinder.conf \
   database connection mysql://root:123456@controller/cinder
+
+openstack-db --init --service cinder --password CINDER_DBPASS
 
 keystone user-create --name=cinder --pass=123456 --email=cinder@example.com
 keystone user-role-add --user=cinder --tenant=service --role=admin
