@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Please configure your network (esp. IP address) first!!
+
 # networking
 service NetworkManager stop
 service network start
@@ -248,3 +250,14 @@ service httpd start
 service memcached start
 chkconfig httpd on
 chkconfig memcached on
+
+# Cinder-install
+
+yum -y install openstack-cinder
+
+openstack-config --set /etc/cinder/cinder.conf \
+  database connection mysql://root:123456@controller/cinder
+
+keystone user-create --name=cinder --pass=123456 --email=cinder@example.com
+keystone user-role-add --user=cinder --tenant=service --role=admin
+
