@@ -258,7 +258,7 @@ yum -y install openstack-cinder
 openstack-config --set /etc/cinder/cinder.conf \
   database connection mysql://root:123456@controller/cinder
 
-openstack-db --init --service cinder --password CINDER_DBPASS
+openstack-db --init --service cinder --password 123456
 
 keystone user-create --name=cinder --pass=123456 --email=cinder@example.com
 keystone user-role-add --user=cinder --tenant=service --role=admin
@@ -300,3 +300,13 @@ service openstack-cinder-api start
 service openstack-cinder-scheduler start
 chkconfig openstack-cinder-api on
 chkconfig openstack-cinder-scheduler on
+
+# Neutron-network-node-install
+
+mysql -u root -p123456
+CREATE DATABASE neutron;
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' \
+IDENTIFIED BY '123456';
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' \
+IDENTIFIED BY '123456';
+logout
