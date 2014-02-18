@@ -11,6 +11,8 @@ chkconfig network on
 
 hostname controller
 
+yum install kernel iproute
+
 # ntp
 
 yum -y install ntp
@@ -322,7 +324,7 @@ GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' \
 IDENTIFIED BY '123456';
 exit;
 
-keystone user-create --name=neutron --pass=NEUTRON_PASS --email=neutron@example.com
+keystone user-create --name=neutron --pass=123456 --email=neutron@example.com
 
 keystone user-role-add --user=neutron --tenant=service --role=admin
 
@@ -361,8 +363,8 @@ openstack-config --set /etc/neutron/neutron.conf keystone_authtoken \
 openstack-config --set /etc/neutron/neutron.conf keystone_authtoken \
  admin_password 123456
 
-openstack-config --set /etc/neutron/neutron.conf AGENT \
-   root_helper sudo neutron-rootwrap /etc/neutron/rootwrap.conf
+openstack-config --set /etc/neutron/neutron.conf agent \
+   root_helper "sudo neutron-rootwrap /etc/neutron/rootwrap.conf"
 
 openstack-config --set /etc/neutron/neutron.conf DEFAULT \
  rpc_backend neutron.openstack.common.rpc.impl_qpid
@@ -420,14 +422,14 @@ OVS_BRIDGE=br-ex" > /etc/sysconfig/network-scripts/ifcfg-eth0
 
 sed '/interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver/a\
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver\
-use_namespaces = True' -i  /etc/neutron/l3_agent.ini
+use_namespaces = False' -i  /etc/neutron/l3_agent.ini
 
 sed "/ovs_use_veth =/a\
 ovs_use_veth = True" -i /etc/neutron/l3_agent.ini
 
 sed '/interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver/a\
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver\
-use_namespaces = True' -i  /etc/neutron/dhcp_agent.ini
+use_namespaces = False' -i  /etc/neutron/dhcp_agent.ini
 
 sed "/ovs_use_veth =/a\
 ovs_use_veth = True" -i /etc/neutron/dhcp_agent.ini
@@ -504,7 +506,7 @@ openstack-config --set /etc/nova/nova.conf DEFAULT \
 openstack-config --set /etc/nova/nova.conf DEFAULT \
  neutron_admin_username neutron
 openstack-config --set /etc/nova/nova.conf DEFAULT \
- neutron_admin_password NEUTRON_PASS
+ neutron_admin_password 123456
 openstack-config --set /etc/nova/nova.conf DEFAULT \
  neutron_admin_auth_url http://controller:35357/v2.0
 openstack-config --set /etc/nova/nova.conf DEFAULT \
@@ -525,8 +527,6 @@ sed '2 aauth_uri = http://controller:5000' -i /etc/neutron/neutron.conf
 
 sed -i "/api_paste_config =/a\
 api_paste_config = \/etc\/neutron\/api-paste.ini" /etc/neutron/neutron.conf
-
-####################################################################################################
 
 service openstack-nova-api restart
 service openstack-nova-scheduler restart
