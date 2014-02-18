@@ -3,6 +3,7 @@
 # Please configure your network (esp. IP address) first!!
 
 # networking
+
 service NetworkManager stop
 service network start
 chkconfig NetworkManager off
@@ -11,11 +12,13 @@ chkconfig network on
 hostname controller
 
 # ntp
+
 yum -y install ntp
 service ntpd start
 chkconfig ntpd on
 
 # mysql
+
 yum install -y mysql mysql-server MySQL-python
 sed '2 ibind-address = controller' -i /etc/my.cnf
 service mysqld start
@@ -24,18 +27,21 @@ mysql_install_db
 mysql_secure_installation
 
 # OpenStack packages
+
 yum install -y http://repos.fedorapeople.org/repos/openstack/openstack-havana/rdo-release-havana-6.noarch.rpm
 yum install -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 yum install -y openstack-utils
 yum install -y openstack-selinux
 
 # qpid
+
 yum install -y qpid-cpp-server memcached
 sed "s/auth=yes/auth=no/g" -i /etc/qpidd.conf
 service qpidd start
 chkconfig qpidd on
 
 # Keystone-install
+
 yum install -y openstack-keystone python-keystoneclient
 
 openstack-config --set /etc/keystone/keystone.conf \
@@ -53,6 +59,7 @@ service openstack-keystone start
 chkconfig openstack-keystone on
 
 # Keystone-define
+
 export OS_SERVICE_TOKEN=123456
 export OS_SERVICE_ENDPOINT=http://controller:35357/v2.0
 
@@ -78,12 +85,14 @@ keystone endpoint-create \
   --adminurl=http://controller:35357/v2.0
 
 # make keystonerc
+
 echo "export OS_USERNAME=admin
 export OS_PASSWORD=123456
 export OS_TENANT_NAME=admin
 export OS_AUTH_URL=http://controller:35357/v2.0" > ~/keystonerc
 
 # Glance-install
+
 yum install -y openstack-glance
 
 openstack-config --set /etc/glance/glance-api.conf \
@@ -152,6 +161,7 @@ chkconfig openstack-glance-api on
 chkconfig openstack-glance-registry on
 
 # Nova-controller-install
+
 yum install -y openstack-nova python-novaclient
 
 openstack-config --set /etc/nova/nova.conf \
@@ -210,6 +220,7 @@ chkconfig openstack-nova-conductor on
 chkconfig openstack-nova-novncproxy on
 
 # Nova-compute-install
+
 yum install -y openstack-nova-compute
 
 openstack-config --set /etc/nova/nova.conf \
@@ -328,12 +339,12 @@ yum -y install openstack-neutron
 
 for s in neutron-{dhcp,metadata,l3}-agent; do chkconfig $s on; done;
 
-sed -i "s/net.ipv4.ip_forward=0/\
-net.ipv4.ip_forward=1/g" /etc/sysctl.conf
-sed -i "s/net.ipv4.conf.default.rp_filter=1/\
-net.ipv4.conf.default.rp_filter=0/g" /etc/sysctl.conf
+sed -i "s/net.ipv4.ip_forward/\
+net.ipv4.ip_forward = 1/g" /etc/sysctl.conf
+sed -i "s/net.ipv4.conf.default.rp_filter/\
+net.ipv4.conf.default.rp_filter = 0/g" /etc/sysctl.conf
 sed -i "/net.ipv4.conf.default.rp_filter/a\
-net.ipv4.conf.default.rp_filter=0" /etc/sysctl.conf
+net.ipv4.conf.all.rp_filter = 0" /etc/sysctl.conf
 
 service network restart
 
@@ -384,7 +395,7 @@ chkconfig openvswitch on
 
 ovs-vsctl add-br br-int
 ovs-vsctl add-br br-ex
-ovs-vsctl add-port br-ex
+ovs-vsctl add-port br-ex eth0
 
 echo "
 DEVICE=br-ex
@@ -405,4 +416,121 @@ ONBOOT=yes
 $MAC
 TYPE=OVSPort
 DEVICETYPE=ovs
-OVS_BRIDGE=br-ex" > /etc/sysconfig/network-scripts/ifcfg-eth0ls
+OVS_BRIDGE=br-ex" > /etc/sysconfig/network-scripts/ifcfg-eth0
+
+sed '/interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver/a\
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver\
+use_namespaces = True' -i  /etc/neutron/l3_agent.ini
+
+sed "/ovs_use_veth =/a\
+ovs_use_veth = True" -i /etc/neutron/l3_agent.ini
+
+sed '/interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver/a\
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver\
+use_namespaces = True' -i  /etc/neutron/dhcp_agent.ini
+
+sed "/ovs_use_veth =/a\
+ovs_use_veth = True" -i /etc/neutron/dhcp_agent.ini
+
+sed "/core_plugin =/a\
+core_plugin = neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2" \
+-i  /etc/neutron/neutron.conf
+
+## GRE tunneling (INSERTED!!) ##
+
+ovs-vsctl add-br br-tun
+
+sed -i '/# Example: tenant_network_type = vxlan/a\
+tenant_network_type = gre\
+tunnel_id_ranges = 1:1000\
+enable_tunneling = True\
+integration_bridge = br-int\
+tunnel_bridge = br-tun\
+local_ip = 10.0.0.254' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+
+## GRE tunneling (END) ##
+
+sed -i "/firewall_driver = neutron.agent.linux.iptables/a\
+firewall_driver = neutron.agent.firewall.NoopFirewall" \
+/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+
+chkconfig neutron-openvswitch-agent on
+
+## Open vSwitch-install (END) PART OF Neutron-network-node ##
+
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT \
+   dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+  neutron_metadata_proxy_shared_secret 123456
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+  service_neutron_metadata_proxy true
+
+service openstack-nova-api restart
+
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  auth_url http://controller:5000/v2.0
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  auth_region regionOne
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  admin_tenant_name service
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  admin_user neutron
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  admin_password 123456
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  nova_metadata_ip controller
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  metadata_proxy_shared_secret 123456
+
+ln -s /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini /etc/neutron/plugin.ini
+
+service neutron-dhcp-agent restart
+service neutron-l3-agent restart
+service neutron-metadata-agent restart
+
+service neutron-openvswitch-agent restart
+
+# Neutron-compute-node-install
+
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+ network_api_class nova.network.neutronv2.api.API
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+ neutron_url http://controller:9696
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+ neutron_auth_strategy keystone
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+ neutron_admin_tenant_name service
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+ neutron_admin_username neutron
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+ neutron_admin_password NEUTRON_PASS
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+ neutron_admin_auth_url http://controller:35357/v2.0
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+ linuxnet_interface_driver nova.network.linux_net.LinuxOVSInterfaceDriver
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+ firewall_driver nova.virt.firewall.NoopFirewallDriver
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+ security_group_api neutron
+
+sed -i "s/security_group_api = neutron/\
+# security_group_api = neutron/" /etc/nova/nova.conf
+
+service openstack-nova-compute restart
+
+service neutron-openvswitch-agent restart
+
+sed '2 aauth_uri = http://controller:5000' -i /etc/neutron/neutron.conf
+
+sed -i "/api_paste_config =/a\
+api_paste_config = \/etc\/neutron\/api-paste.ini" /etc/neutron/neutron.conf
+
+####################################################################################################
+
+service openstack-nova-api restart
+service openstack-nova-scheduler restart
+service openstack-nova-conductor restart
+
+service neutron-server start
+chkconfig neutron-server on
