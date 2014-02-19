@@ -399,21 +399,20 @@ ovs-vsctl add-br br-int
 ovs-vsctl add-br br-ex
 ovs-vsctl add-port br-ex eth0
 
-echo "
-DEVICE=br-ex
+echo "DEVICE=br-ex
 DEVICETYPE=ovs
 TYPE=OVSBridge
 BOOTPROTO=static
 IPADDR=172.16.1.73
 NETMASK=255.255.0.0
 GATEWAY=172.16.0.254
+DNS1=8.8.8.8
 ONBOOT=yes" > /etc/sysconfig/network-scripts/ifcfg-br-ex
 
 MAC=$(cat /etc/sysconfig/network-scripts/ifcfg-eth0|grep HWADDR)
 cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0.bak
 
-echo "
-DEVICE=eth0
+echo "DEVICE=eth0
 ONBOOT=yes
 $MAC
 TYPE=OVSPort
@@ -422,14 +421,14 @@ OVS_BRIDGE=br-ex" > /etc/sysconfig/network-scripts/ifcfg-eth0
 
 sed '/interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver/a\
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver\
-use_namespaces = False' -i  /etc/neutron/l3_agent.ini
+use_namespaces = True' -i  /etc/neutron/l3_agent.ini
 
 sed "/ovs_use_veth =/a\
 ovs_use_veth = True" -i /etc/neutron/l3_agent.ini
 
 sed '/interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver/a\
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver\
-use_namespaces = False' -i  /etc/neutron/dhcp_agent.ini
+use_namespaces = True' -i  /etc/neutron/dhcp_agent.ini
 
 sed "/ovs_use_veth =/a\
 ovs_use_veth = True" -i /etc/neutron/dhcp_agent.ini
