@@ -453,7 +453,7 @@ local_ip = 10.0.0.254' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
 ## GRE tunneling (END) ##
 
 sed -i "/firewall_driver = neutron.agent.linux.iptables/a\
-firewall_driver = neutron.agent.firewall.NoopFirewall" \
+firewall_driver = neutron.agent.firewall.NoopFirewallDriver" \
 /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
 
 chkconfig neutron-openvswitch-agent on
