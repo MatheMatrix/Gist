@@ -95,6 +95,8 @@ TYPE=OVSPort
 DEVICETYPE=ovs
 OVS_BRIDGE=br-ex" > /etc/sysconfig/network-scripts/ifcfg-eth0
 
+service network restart
+
 sed '/interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver/a\
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver\
 use_namespaces = True' -i  /etc/neutron/l3_agent.ini
