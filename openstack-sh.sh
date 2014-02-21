@@ -231,7 +231,7 @@ openstack-config --set /etc/nova/nova.conf \
 
 openstack-config --set /etc/nova/nova.conf DEFAULT glance_host controller
 
-openstack-config --set /etc/nova/nova.conf DEFAULT libvirt_type qemu
+openstack-config --set /etc/nova/nova.conf DEFAULT libvirt_type kvm
 
 service libvirtd start
 service messagebus start
@@ -419,6 +419,8 @@ TYPE=OVSPort
 DEVICETYPE=ovs
 OVS_BRIDGE=br-ex" > /etc/sysconfig/network-scripts/ifcfg-eth0
 
+service network restart
+
 sed '/interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver/a\
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver\
 use_namespaces = True' -i  /etc/neutron/l3_agent.ini
@@ -447,7 +449,7 @@ tunnel_id_ranges = 1:1000\
 enable_tunneling = True\
 integration_bridge = br-int\
 tunnel_bridge = br-tun\
-local_ip = 10.0.0.254' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+local_ip = controller' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
 
 ## GRE tunneling (END) ##
 
