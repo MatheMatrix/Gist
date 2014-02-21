@@ -317,13 +317,12 @@ chkconfig openstack-cinder-scheduler on
 
 # Neutron-network-node-install
 
-mysql -u root -p123456
-CREATE DATABASE neutron;
-GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' \
+mysql -u root -p123456 -e"CREATE DATABASE neutron;
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost'
 IDENTIFIED BY '123456';
-GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' \
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%'
 IDENTIFIED BY '123456';
-exit;
+exit;"
 
 keystone user-create --name=neutron --pass=123456 --email=neutron@example.com
 
@@ -390,7 +389,7 @@ openstack-config --set /etc/neutron/api-paste.ini filter:authtoken \
 
 ## Open vSwitch-install (INSERTED!!) PART OF Neutron-network-node ##
 
-yum -y install openstack-neutron-openvswitch
+yum -y install openstack-neutron-openvswitch iproute
 
 service openvswitch start
 
