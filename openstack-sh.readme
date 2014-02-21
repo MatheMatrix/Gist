@@ -1,6 +1,8 @@
 关于脚本：
 
-本脚本为一键 all in one 脚本，适用于 CentOS 6 以上版本，强烈建议安装前执行 yum upgrade，更新内核后请重启机器，至少保证内核版本在 2.4 及以上以保证 iproute 的正确运行（IP NameSpace）。
+本脚本为一键 all in one 脚本，适用于 CentOS 6 以上版本，强烈建议安装前执行 yum upgrade，
+更新内核后请重启机器，
+至少保证内核版本在 2.4 及以上以保证 iproute 的正确运行（IP NameSpace）。
 
 自动安装 keystone, Glance, Nova 控制和计算服务, Horizon, Cinder 控制服务, Neutron 控制、外网通讯和虚拟机网络。
 
