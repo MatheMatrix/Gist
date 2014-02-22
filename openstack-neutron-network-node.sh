@@ -1,15 +1,6 @@
-keystone user-create --name=neutron --pass=NEUTRON_PASS --email=neutron@example.com
+#!/usr/bin/env bash
 
-keystone user-role-add --user=neutron --tenant=service --role=admin
-
-keystone service-create --name=neutron --type=network \
-     --description="OpenStack Networking Service"
-
-keystone endpoint-create \
-     --service-id $(keystone service-list | awk '/ network / {print $2}') \
-     --publicurl http://controller:9696 \
-     --adminurl http://controller:9696 \
-     --internalurl http://controller:9696
+# Notice Line 72
 
 yum -y install openstack-neutron
 
@@ -37,8 +28,8 @@ openstack-config --set /etc/neutron/neutron.conf keystone_authtoken \
 openstack-config --set /etc/neutron/neutron.conf keystone_authtoken \
  admin_password 123456
 
-openstack-config --set /etc/neutron/neutron.conf AGENT \
-   root_helper sudo neutron-rootwrap /etc/neutron/rootwrap.conf
+openstack-config --set /etc/neutron/neutron.conf agent \
+   root_helper sudo "neutron-rootwrap /etc/neutron/rootwrap.conf"
 
 openstack-config --set /etc/neutron/neutron.conf DEFAULT \
  rpc_backend neutron.openstack.common.rpc.impl_qpid
@@ -61,9 +52,9 @@ openstack-config --set /etc/neutron/api-paste.ini filter:authtoken \
 openstack-config --set /etc/neutron/api-paste.ini filter:authtoken \
  admin_password 123456
 
-## Open vSwitch-install (INSERTED!!) PART OF Neutron-network-node ##
+## Open vSwitch-install (INSERTED!!) ##
 
-yum -y install openstack-neutron-openvswitch
+yum nstall -y iopenstack-neutron-openvswitch
 
 service openvswitch start
 
@@ -93,3 +84,78 @@ $MAC
 TYPE=OVSPort
 DEVICETYPE=ovs
 OVS_BRIDGE=br-ex" > /etc/sysconfig/network-scripts/ifcfg-eth0ls
+
+service network restart
+
+sed '/interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver/a\
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver\
+use_namespaces = True' -i  /etc/neutron/l3_agent.ini
+
+sed "/ovs_use_veth =/a\
+ovs_use_veth = True" -i /etc/neutron/l3_agent.ini
+
+sed '/interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver/a\
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver\
+use_namespaces = True' -i  /etc/neutron/dhcp_agent.ini
+
+sed "/ovs_use_veth =/a\
+ovs_use_veth = True" -i /etc/neutron/dhcp_agent.ini
+
+sed "/core_plugin =/a\
+core_plugin = neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2" \
+-i  /etc/neutron/neutron.conf
+
+## GRE tunneling (INSERTED!!) ##
+
+ovs-vsctl add-br br-tun
+
+sed -i '/# Example: tenant_network_type = vxlan/a\
+tenant_network_type = gre\
+tunnel_id_ranges = 1:1000\
+enable_tunneling = True\
+integration_bridge = br-int\
+tunnel_bridge = br-tun\
+local_ip = 192.168.10.10' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+
+## GRE tunneling (END) ##
+
+sed -i "/firewall_driver = neutron.agent.linux.iptables/a\
+firewall_driver = neutron.agent.firewall.NoopFirewallDriver" \
+/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+
+chkconfig neutron-openvswitch-agent on
+
+## Open vSwitch-install (END) ##
+
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT \
+   dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+  neutron_metadata_proxy_shared_secret 123456
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+  service_neutron_metadata_proxy true
+
+service openstack-nova-api restart
+
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  auth_url http://controller:5000/v2.0
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  auth_region regionOne
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  admin_tenant_name service
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  admin_user neutron
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  admin_password 123456
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  nova_metadata_ip controller
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
+  metadata_proxy_shared_secret 123456
+
+ln -s /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini /etc/neutron/plugin.ini
+
+service neutron-dhcp-agent restart
+service neutron-l3-agent restart
+service neutron-metadata-agent restart
+
+service neutron-openvswitch-agent restart
