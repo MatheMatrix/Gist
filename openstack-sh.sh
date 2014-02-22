@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Please configure your network (esp. IP address) first!!
-# Note line 403 ro line 411
+# Note line 406, line 452
 
 # networking
 
@@ -449,7 +449,7 @@ tunnel_id_ranges = 1:1000\
 enable_tunneling = True\
 integration_bridge = br-int\
 tunnel_bridge = br-tun\
-local_ip = controller' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+local_ip = 192.168.10.10' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
 
 ## GRE tunneling (END) ##
 
