@@ -2,6 +2,13 @@
 
 # Notice GRE tunning's local ip setting, see line 112
 
+echo "export OS_USERNAME=admin
+export OS_PASSWORD=123456
+export OS_TENANT_NAME=admin
+export OS_AUTH_URL=http://controller:35357/v2.0" > ~/keystonerc
+
+source ~/keystonerc
+
 # networking
 service NetworkManager stop
 service network start

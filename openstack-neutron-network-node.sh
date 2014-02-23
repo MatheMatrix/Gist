@@ -2,6 +2,13 @@
 
 # Notice Line 72
 
+echo "export OS_USERNAME=admin
+export OS_PASSWORD=123456
+export OS_TENANT_NAME=admin
+export OS_AUTH_URL=http://controller:35357/v2.0" > ~/keystonerc
+
+source ~/keystonerc
+
 yum -y install openstack-neutron
 
 for s in neutron-{dhcp,metadata,l3}-agent; do chkconfig $s on; done;
