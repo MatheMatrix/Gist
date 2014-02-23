@@ -320,8 +320,7 @@ mysql -u root -p123456 -e"CREATE DATABASE neutron;
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost'
 IDENTIFIED BY '123456';
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%'
-IDENTIFIED BY '123456';
-exit;"
+IDENTIFIED BY '123456';"
 
 keystone user-create --name=neutron --pass=123456 --email=neutron@example.com
 
@@ -336,7 +335,7 @@ keystone endpoint-create \
      --adminurl http://controller:9696 \
      --internalurl http://controller:9696
 
-yum install openstack-neutron python-neutron python-neutronclient
+yum install -y openstack-neutron python-neutron python-neutronclient
 
 openstack-config --set /etc/neutron/neutron.conf DATABASE sql_connection \
    mysql://neutron:123456@controller/neutron
