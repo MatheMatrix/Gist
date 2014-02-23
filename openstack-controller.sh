@@ -382,7 +382,7 @@ core_plugin = neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2"
 sed -i '/# Example: tenant_network_type = vxlan/a\
 tenant_network_type = gre\
 tunnel_id_ranges = 1:1000\
-enable_tunneling = True\' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+enable_tunneling = True' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
 
 openstack-config --set /etc/nova/nova.conf DEFAULT \
  network_api_class nova.network.neutronv2.api.API
