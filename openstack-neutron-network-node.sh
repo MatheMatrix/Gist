@@ -31,12 +31,12 @@ yum -y install openstack-neutron
 
 for s in neutron-{dhcp,metadata,l3}-agent; do chkconfig $s on; done;
 
-sed -i "s/net.ipv4.ip_forward=0/\
-net.ipv4.ip_forward=1/g" /etc/sysctl.conf
-sed -i "s/net.ipv4.conf.default.rp_filter=1/\
-net.ipv4.conf.default.rp_filter=0/g" /etc/sysctl.conf
+sed -i "s/net.ipv4.ip_forward = 0/\
+net.ipv4.ip_forward = 1/g" /etc/sysctl.conf
+sed -i "s/net.ipv4.conf.default.rp_filter = 1/\
+net.ipv4.conf.default.rp_filter = 0/g" /etc/sysctl.conf
 sed -i "/net.ipv4.conf.default.rp_filter/a\
-net.ipv4.conf.default.rp_filter=0" /etc/sysctl.conf
+net.ipv4.conf.all.rp_filter = 0" /etc/sysctl.conf
 
 service network restart
 
