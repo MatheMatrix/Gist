@@ -93,7 +93,7 @@ ONBOOT=yes
 $MAC
 TYPE=OVSPort
 DEVICETYPE=ovs
-OVS_BRIDGE=br-ex" > /etc/sysconfig/network-scripts/ifcfg-eth0ls
+OVS_BRIDGE=br-ex" > /etc/sysconfig/network-scripts/ifcfg-eth0
 
 service network restart
 
