@@ -417,6 +417,13 @@ openstack-config --set /etc/nova/nova.conf DEFAULT \
 openstack-config --set /etc/nova/nova.conf DEFAULT \
  security_group_api neutron
 
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+  neutron_metadata_proxy_shared_secret 123456
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+  service_neutron_metadata_proxy true
+
+service openstack-nova-api restart
+
 sed -i "s/security_group_api = neutron/\
 # security_group_api = neutron/" /etc/nova/nova.conf
 

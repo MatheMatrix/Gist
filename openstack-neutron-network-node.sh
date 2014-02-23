@@ -156,13 +156,6 @@ chkconfig neutron-openvswitch-agent on
 openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT \
    dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
 
-openstack-config --set /etc/nova/nova.conf DEFAULT \
-  neutron_metadata_proxy_shared_secret 123456
-openstack-config --set /etc/nova/nova.conf DEFAULT \
-  service_neutron_metadata_proxy true
-
-service openstack-nova-api restart
-
 openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
   auth_url http://controller:5000/v2.0
 openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
