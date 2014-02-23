@@ -79,7 +79,7 @@ openstack-config --set /etc/neutron/api-paste.ini filter:authtoken \
 
 ## Open vSwitch-install (INSERTED!!) ##
 
-yum nstall -y openstack-neutron-openvswitch openvswitch
+yum install -y openstack-neutron-openvswitch openvswitch
 
 service openvswitch start
 
