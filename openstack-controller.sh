@@ -263,6 +263,10 @@ OPENSTACK_KEYSTONE_DEFAULT_ROLE = "admin"/g' /etc/openstack-dashboard/local_sett
 sed -i 's/SELINUX=enforcing/\
 SELINUX=disabled/g' /etc/selinux/config
 
+iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+iptables -I INPUT -p tcp --dport 22 -j ACCEPT
+service iptables save
+
 setsebool httpd_can_network_connect on
 setenforce 0
 
