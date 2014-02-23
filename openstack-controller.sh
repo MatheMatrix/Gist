@@ -257,10 +257,14 @@ CACHES = {\
 sed -i "s/ALLOWED_HOSTS = \['horizon.example.com', 'localhost'\]/\
 ALLOWED_HOSTS = ['localhost', 'my-desktop', 'controller']/g" /etc/openstack-dashboard/local_settings
 
-sed -i 's/OPENSTACK_HOST = "127.0.0.1"/\
-OPENSTACK_HOST = "controller"/g' /etc/openstack-dashboard/local_settings
+sed -i 's/OPENSTACK_KEYSTONE_DEFAULT_ROLE = "Member"/\
+OPENSTACK_KEYSTONE_DEFAULT_ROLE = "admin"/g' /etc/openstack-dashboard/local_settings
+
+sed -i 's/SELINUX=enforcing/\
+SELINUX=disabled/g' /etc/selinux/config
 
 setsebool httpd_can_network_connect on
+setenforce 0
 
 service httpd start
 service memcached start
