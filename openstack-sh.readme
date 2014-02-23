@@ -1,6 +1,6 @@
  * 关于脚本：
 
-本脚本为一键 all in one 脚本，适用于 CentOS 6.3 及以上版本（主要是为了开启IP NameSpace），
+本脚本为一键 all in one 脚本，适用于 CentOS 6.3 x86_64 及以上版本（主要是为了开启IP NameSpace），
 强烈建议安装前执行 yum upgrade，
 更新内核后请重启机器，
 至少保证内核版本在 2.4 及以上以保证 iproute 的正确运行（IP NameSpace）。

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 # Please configure your network (esp. IP address) first!!
-# Note line 406, line 452
 
 # networking
 
