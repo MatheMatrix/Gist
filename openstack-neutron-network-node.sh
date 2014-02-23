@@ -9,6 +9,22 @@ export OS_AUTH_URL=http://controller:35357/v2.0" > ~/keystonerc
 
 source ~/keystonerc
 
+service NetworkManager stop
+service network start
+chkconfig NetworkManager off
+chkconfig network on
+
+yum -y install ntp
+service ntpd start
+chkconfig ntpd on
+
+yum install -y mysql MySQL-python
+
+yum install -y http://repos.fedorapeople.org/repos/openstack/openstack-havana/rdo-release-havana-6.noarch.rpm
+yum install -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+yum install -y openstack-utils
+yum install -y openstack-selinux
+
 hostname network
 
 yum -y install openstack-neutron
