@@ -320,6 +320,8 @@ mysql -u root -p123456 -e"CREATE DATABASE neutron;
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost'
 IDENTIFIED BY '123456';
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%'
+IDENTIFIED BY '123456';
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'controller'
 IDENTIFIED BY '123456';"
 
 keystone user-create --name=neutron --pass=123456 --email=neutron@example.com
@@ -413,5 +415,7 @@ service openstack-nova-api restart
 service openstack-nova-scheduler restart
 service openstack-nova-conductor restart
 
+service openvswitch restart
 service neutron-server start
 chkconfig neutron-server on
+chkconfig openvswitch on
