@@ -71,6 +71,8 @@ admin_tenant_name = service\
 admin_user = nova\
 admin_password = 123456' -i /etc/nova/api-paste.ini
 
+openstack-config --set /etc/nova/nova.conf DEFAULT libvirt_type kvm
+
 service libvirtd start
 service messagebus start
 chkconfig libvirtd on
