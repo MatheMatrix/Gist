@@ -173,6 +173,9 @@ openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
 
 ln -s /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini /etc/neutron/plugin.ini
 
+sed -i 's/Defaults   !visiblepw/\
+Defaults   visiblepw/' /etc/sudoers
+
 service neutron-dhcp-agent restart
 service neutron-l3-agent restart
 service neutron-metadata-agent restart
