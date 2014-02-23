@@ -9,6 +9,8 @@ export OS_AUTH_URL=http://controller:35357/v2.0" > ~/keystonerc
 
 source ~/keystonerc
 
+hostname network
+
 yum -y install openstack-neutron
 
 for s in neutron-{dhcp,metadata,l3}-agent; do chkconfig $s on; done;
