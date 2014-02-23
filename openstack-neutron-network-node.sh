@@ -27,7 +27,7 @@ yum install -y openstack-selinux
 
 hostname network
 
-yum -y install openstack-neutron
+yum -y install openstack-neutron iproute
 
 for s in neutron-{dhcp,metadata,l3}-agent; do chkconfig $s on; done;
 
@@ -174,10 +174,10 @@ openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT \
 ln -s /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini /etc/neutron/plugin.ini
 
 sed -i 's/Defaults   !visiblepw/\
-Defaults   visiblepw/' /etc/sudoers
+Defaults   visiblepw/g' /etc/sudoers
 
 sed -i '/## Allow root to run any commands anywhere/a\
-neutron    ALL=(ALL)    NOPASSWD: ALL/' /etc/sudoers
+neutron    ALL=(ALL)    NOPASSWD: ALL' /etc/sudoers
 
 service neutron-dhcp-agent restart
 service neutron-l3-agent restart
