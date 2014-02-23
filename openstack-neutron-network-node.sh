@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Notice Line 72
+# Notice Line 81 and 128
 
 echo "export OS_USERNAME=admin
 export OS_PASSWORD=123456
@@ -81,6 +81,7 @@ BOOTPROTO=static
 IPADDR=172.16.1.73
 NETMASK=255.255.0.0
 GATEWAY=172.16.0.254
+DNS1=8.8.8.8
 ONBOOT=yes" > /etc/sysconfig/network-scripts/ifcfg-br-ex
 
 MAC=$(cat /etc/sysconfig/network-scripts/ifcfg-eth0|grep HWADDR)

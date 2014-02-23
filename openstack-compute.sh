@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Notice GRE tunning's local ip setting, see line 112
+# Notice GRE tunning's local ip setting, see line 119
 
 echo "export OS_USERNAME=admin
 export OS_PASSWORD=123456
