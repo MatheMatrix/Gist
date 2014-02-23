@@ -176,6 +176,9 @@ ln -s /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini /etc/neutron/plugi
 sed -i 's/Defaults   !visiblepw/\
 Defaults   visiblepw/' /etc/sudoers
 
+sed -i '/## Allow root to run any commands anywhere/a\
+neutron    ALL=(ALL)    NOPASSWD: ALL/' /etc/sudoers
+
 service neutron-dhcp-agent restart
 service neutron-l3-agent restart
 service neutron-metadata-agent restart
