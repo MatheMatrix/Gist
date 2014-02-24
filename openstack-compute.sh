@@ -2,13 +2,6 @@
 
 # Notice GRE tunning's local ip setting, see line 119
 
-echo "export OS_USERNAME=admin
-export OS_PASSWORD=123456
-export OS_TENANT_NAME=admin
-export OS_AUTH_URL=http://controller:35357/v2.0" > ~/keystonerc
-
-source ~/keystonerc
-
 # networking
 service NetworkManager stop
 service network start
@@ -21,6 +14,9 @@ hostname compute1
 yum -y install ntp
 service ntpd start
 chkconfig ntpd on
+
+cp /etc/localtime /etc/localtime.bak
+cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 # mysql
 yum install -y mysql MySQL-python
@@ -36,6 +32,8 @@ echo "export OS_USERNAME=admin
 export OS_PASSWORD=123456
 export OS_TENANT_NAME=admin
 export OS_AUTH_URL=http://controller:35357/v2.0" > ~/keystonerc
+
+source ~/keystonerc
 
 # Nova-compute-install
 yum install -y openstack-nova-compute
@@ -97,6 +95,7 @@ service openvswitch start
 chkconfig openvswitch on
 
 ovs-vsctl add-br br-int
+ovs-vsctl add-br br-tun
 
 sed -i "/core_plugin =/a\
 core_plugin = neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2" /etc/neutron/neutron.conf
@@ -185,6 +184,12 @@ openstack-config --set /etc/nova/nova.conf DEFAULT \
  firewall_driver nova.virt.firewall.NoopFirewallDriver
 openstack-config --set /etc/nova/nova.conf DEFAULT \
  security_group_api neutron
+
+sed -i 's/Defaults   !visiblepw/\
+Defaults   visiblepw/g' /etc/sudoers
+
+sed -i '/## Allow root to run any commands anywhere/a\
+neutron    ALL=(ALL)    NOPASSWD: ALL' /etc/sudoers
 
 sed -i "s/security_group_api = neutron/\
 # security_group_api = neutron/" /etc/nova/nova.conf

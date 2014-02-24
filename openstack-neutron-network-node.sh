@@ -18,6 +18,9 @@ yum -y install ntp
 service ntpd start
 chkconfig ntpd on
 
+cp /etc/localtime /etc/localtime.bak
+cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
 yum install -y mysql MySQL-python
 
 yum install -y http://repos.fedorapeople.org/repos/openstack/openstack-havana/rdo-release-havana-6.noarch.rpm

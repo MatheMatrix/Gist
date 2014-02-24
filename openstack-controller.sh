@@ -5,6 +5,9 @@
 # Mysql installation will need root's current password (press enter directly)
 # and please set root password and make it '123456'!!
 
+# please delete iptables' rule like 
+# "7  REJECT  all  --  0.0.0.0/0    0.0.0.0/0    reject-with icmp-host-prohibited"
+
 # networking
 
 service NetworkManager stop
@@ -22,6 +25,9 @@ yum install -y ntp
 service ntpd start
 chkconfig ntpd on
 
+cp /etc/localtime /etc/localtime.bak
+cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
 # mysql
 
 yum install -y mysql mysql-server MySQL-python
@@ -30,6 +36,9 @@ service mysqld start
 chkconfig mysqld on
 mysql_install_db
 mysql_secure_installation
+
+iptables -I INPUT 4 -p tcp -m state --state NEW -m tcp --dport 3306 -j ACCEPT
+service iptables save
 
 # OpenStack packages
 
@@ -226,21 +235,21 @@ chkconfig openstack-nova-novncproxy on
 
 # Nova-compute-install
 
-yum install -y openstack-nova-compute
+# yum install -y openstack-nova-compute
 
-openstack-config --set /etc/nova/nova.conf \
-  DEFAULT novncproxy_base_url http://controller:6080/vnc_auto.html
+# openstack-config --set /etc/nova/nova.conf \
+#   DEFAULT novncproxy_base_url http://controller:6080/vnc_auto.html
 
-openstack-config --set /etc/nova/nova.conf DEFAULT glance_host controller
+# openstack-config --set /etc/nova/nova.conf DEFAULT glance_host controller
 
-openstack-config --set /etc/nova/nova.conf DEFAULT libvirt_type kvm
+# openstack-config --set /etc/nova/nova.conf DEFAULT libvirt_type kvm
 
-service libvirtd start
-service messagebus start
-chkconfig libvirtd on
-chkconfig messagebus on
-service openstack-nova-compute start
-chkconfig openstack-nova-compute on
+# service libvirtd start
+# service messagebus start
+# chkconfig libvirtd on
+# chkconfig messagebus on
+# service openstack-nova-compute start
+# chkconfig openstack-nova-compute on
 
 # Horizon-install
 
