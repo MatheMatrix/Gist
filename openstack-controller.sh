@@ -61,7 +61,7 @@ yum install -y openstack-keystone python-keystoneclient
 openstack-config --set /etc/keystone/keystone.conf \
    sql connection mysql://root:123456@controller/keystone
 
-openstack-db --init --service keystone --password 123456 --rootpw 12345 
+openstack-db --init --service keystone --password 123456 --rootpw 123456
 
 openstack-config --set /etc/keystone/keystone.conf DEFAULT \
    admin_token 123456
@@ -114,7 +114,7 @@ openstack-config --set /etc/glance/glance-api.conf \
 openstack-config --set /etc/glance/glance-registry.conf \
    DEFAULT sql_connection mysql://root:123456@controller/glance
 
-openstack-db --init --service glance --password 123456 --rootpw 12345
+openstack-db --init --service glance --password 123456 --rootpw 123456
 
 keystone user-create --name=glance --pass=123456 \
  --email=glance@example.com
@@ -185,7 +185,7 @@ openstack-config --set /etc/nova/nova.conf \
   DEFAULT rpc_backend nova.openstack.common.rpc.impl_qpid
 openstack-config --set /etc/nova/nova.conf DEFAULT qpid_hostname controller
 
-openstack-db --init --service nova --password 123456 --rootpw 12345
+openstack-db --init --service nova --password 123456 --rootpw 123456
 
 openstack-config --set /etc/nova/nova.conf DEFAULT my_ip controller
 openstack-config --set /etc/nova/nova.conf DEFAULT vncserver_listen controller
@@ -291,7 +291,7 @@ yum -y install openstack-cinder
 openstack-config --set /etc/cinder/cinder.conf \
   database connection mysql://root:123456@controller/cinder
 
-openstack-db --init --service cinder --password 123456 --rootpw 12345
+openstack-db --init --service cinder --password 123456 --rootpw 123456
 
 keystone user-create --name=cinder --pass=123456 --email=cinder@example.com
 keystone user-role-add --user=cinder --tenant=service --role=admin
