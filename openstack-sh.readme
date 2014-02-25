@@ -20,10 +20,10 @@
 
 注意建立外网时使用 admin 登录，在 admin 页建立，选择“外部网络”，选择好正确的子网网段！
 
-使用的虚拟机类型为 kvm 可在 234 行配置。
+默认使用的虚拟机类型为 kvm 。
 
 如果需要 Horzion 在外部使用，可以修改 256 行的 ALLOW_HOSTS 位置。
 
-配置 OVS 时要用准确的 IP 地址
+配置 OVS 时要用准确的 IP 地址。
 
-想要观察 iptables 注意 IP NameSpace
+想要观察 iptables 注意 IP NameSpace。
