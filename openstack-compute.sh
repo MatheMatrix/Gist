@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-# Notice GRE tunning's local ip setting, see line 119
+# Assume compute node has singe IP
+# Plese confirm your /etc/hosts
+
+LOCALIP=192.168.1.12
 
 # networking
 service NetworkManager stop
@@ -117,7 +120,7 @@ tunnel_id_ranges = 1:1000\
 enable_tunneling = True\
 integration_bridge = br-int\
 tunnel_bridge = br-tun\
-local_ip = 192.168.10.11' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+local_ip = $LOCALIP' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
 
 ## GRE tunneling (END) ##
 

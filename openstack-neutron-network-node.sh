@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-# Notice Line 81 and 128
+# Assume use eth0 to connect to external network
+# Plese confirm your /etc/hosts
+
+IPADDR=$(cat /etc/sysconfig/network-scripts/ifcfg-eth0|grep IPADDR|cut -d '=' -f 2)
+NETMASK=$(cat /etc/sysconfig/network-scripts/ifcfg-eth0|grep NETMASK|cut -d '=' -f 2)
+GATEWAY=$(cat /etc/sysconfig/network-scripts/ifcfg-eth0|grep GATEWAY|cut -d '=' -f 2)
+LOCALIP=192.168.1.11
 
 echo "export OS_USERNAME=admin
 export OS_PASSWORD=123456
@@ -97,9 +103,9 @@ DEVICE=br-ex
 DEVICETYPE=ovs
 TYPE=OVSBridge
 BOOTPROTO=static
-IPADDR=172.16.1.73
-NETMASK=255.255.0.0
-GATEWAY=172.16.0.254
+IPADDR=$IPADDR
+NETMASK=$NETMASK
+GATEWAY=$GATEWAY
 DNS1=8.8.8.8
 ONBOOT=yes" > /etc/sysconfig/network-scripts/ifcfg-br-ex
 
@@ -144,7 +150,7 @@ tunnel_id_ranges = 1:1000\
 enable_tunneling = True\
 integration_bridge = br-int\
 tunnel_bridge = br-tun\
-local_ip = 192.168.10.10' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+local_ip = $LOCALIP' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
 
 ## GRE tunneling (END) ##
 
