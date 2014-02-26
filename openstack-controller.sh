@@ -5,8 +5,12 @@
 # Mysql installation will need root's current password (press enter directly)
 # and please set root password and make it '123456'!!
 
-# please delete iptables' rule like 
+# suggest delete iptables' rule like 
 # "7  REJECT  all  --  0.0.0.0/0    0.0.0.0/0    reject-with icmp-host-prohibited"
+
+# Plese confirm your /etc/hosts
+
+HOSTNAME=controller
 
 # networking
 
@@ -15,7 +19,8 @@ service network start
 chkconfig NetworkManager off
 chkconfig network on
 
-hostname controller
+hostname $HOSTNAME
+sed -i "s/^HOSTNAME=.*/HOSTNAME=$HOSTNAME/g" /etc/sysconfig/network
 
 yum install kernel iproute
 

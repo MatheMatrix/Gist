@@ -7,6 +7,7 @@ IPADDR=$(cat /etc/sysconfig/network-scripts/ifcfg-eth0|grep IPADDR|cut -d '=' -f
 NETMASK=$(cat /etc/sysconfig/network-scripts/ifcfg-eth0|grep NETMASK|cut -d '=' -f 2)
 GATEWAY=$(cat /etc/sysconfig/network-scripts/ifcfg-eth0|grep GATEWAY|cut -d '=' -f 2)
 LOCALIP=192.168.1.11
+HOSTNAME=network
 
 echo "export OS_USERNAME=admin
 export OS_PASSWORD=123456
@@ -34,7 +35,8 @@ yum install -y http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.no
 yum install -y openstack-utils
 yum install -y openstack-selinux
 
-hostname network
+hostname $HOSTNAME
+sed -i "s/^HOSTNAME=.*/HOSTNAME=$HOSTNAME/g" /etc/sysconfig/network
 
 yum -y install openstack-neutron iproute
 

@@ -4,6 +4,7 @@
 # Plese confirm your /etc/hosts
 
 LOCALIP=192.168.1.12
+HOSTNAME=compute1
 
 # networking
 service NetworkManager stop
@@ -11,7 +12,8 @@ service network start
 chkconfig NetworkManager off
 chkconfig network on
 
-hostname compute1
+hostname $HOSTNAME
+sed -i "s/^HOSTNAME=.*/HOSTNAME=$HOSTNAME/g" /etc/sysconfig/network
 
 # ntp
 yum -y install ntp
