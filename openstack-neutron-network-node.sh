@@ -9,6 +9,15 @@ GATEWAY=$(cat /etc/sysconfig/network-scripts/ifcfg-eth0|grep GATEWAY|cut -d '=' 
 LOCALIP=192.168.1.11
 HOSTNAME=network
 
+# Test installatiom model works
+function test()
+{
+  if [[ $? -ne 0 ]]; then
+    echo "$1 cant start";
+    exit 0;
+  fi
+}
+
 echo "export OS_USERNAME=admin
 export OS_PASSWORD=123456
 export OS_TENANT_NAME=admin
@@ -93,6 +102,7 @@ openstack-config --set /etc/neutron/api-paste.ini filter:authtoken \
 yum install -y openstack-neutron-openvswitch openvswitch
 
 service openvswitch start
+test openvswitch
 
 chkconfig openvswitch on
 
@@ -192,6 +202,7 @@ neutron    ALL=(ALL)    NOPASSWD: ALL' /etc/sudoers
 
 service neutron-dhcp-agent restart
 service neutron-l3-agent restart
+test neutron-l3-agent
 service neutron-metadata-agent restart
 
 service neutron-openvswitch-agent restart

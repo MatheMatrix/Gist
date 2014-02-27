@@ -6,6 +6,15 @@
 LOCALIP=192.168.1.12
 HOSTNAME=compute1
 
+# Test installatiom model works
+function test()
+{
+  if [[ $? -ne 0 ]]; then
+    echo "$1 cant start";
+    exit 0;
+  fi
+}
+
 # networking
 service NetworkManager stop
 service network start
@@ -81,6 +90,7 @@ service messagebus start
 chkconfig libvirtd on
 chkconfig messagebus on
 service openstack-nova-compute start
+test nova-compute
 chkconfig openstack-nova-compute on
 
 sed -i "s/net.ipv4.ip_forward = 0/\
@@ -97,6 +107,7 @@ service network restart
 yum install -y openstack-neutron-openvswitch
 
 service openvswitch start
+test openvswitch
 chkconfig openvswitch on
 
 ovs-vsctl add-br br-int

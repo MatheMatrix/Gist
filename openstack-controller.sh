@@ -12,6 +12,15 @@
 
 HOSTNAME=controller
 
+# Test installatiom model works
+function test()
+{
+  if [[ $? -ne 0 ]]; then
+    echo "$1 cant start";
+    exit 0;
+  fi
+}
+
 # networking
 
 service NetworkManager stop
@@ -38,6 +47,7 @@ cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 yum install -y mysql mysql-server MySQL-python
 sed '2 ibind-address = controller' -i /etc/my.cnf
 service mysqld start
+test mysql
 chkconfig mysqld on
 mysql_install_db
 mysql_secure_installation
@@ -57,6 +67,7 @@ yum install -y openstack-selinux
 yum install -y qpid-cpp-server memcached
 sed "s/auth=yes/auth=no/g" -i /etc/qpidd.conf
 service qpidd start
+test qpid
 chkconfig qpidd on
 
 # Keystone-install
@@ -75,6 +86,7 @@ keystone-manage pki_setup --keystone-user keystone --keystone-group keystone
 chown -R keystone:keystone /etc/keystone/* /var/log/keystone/keystone.log
 
 service openstack-keystone start
+test keystone
 chkconfig openstack-keystone on
 
 # Keystone-define
@@ -176,6 +188,7 @@ keystone endpoint-create \
 
 service openstack-glance-api start
 service openstack-glance-registry start
+test glance
 chkconfig openstack-glance-api on
 chkconfig openstack-glance-registry on
 
@@ -226,6 +239,7 @@ keystone endpoint-create \
   --adminurl=http://controller:8774/v2/%\(tenant_id\)s
 
 service openstack-nova-api start
+test nova-api
 service openstack-nova-cert start
 service openstack-nova-consoleauth start
 service openstack-nova-scheduler start
@@ -285,6 +299,7 @@ setsebool httpd_can_network_connect on
 setenforce 0
 
 service httpd start
+test httpd
 service memcached start
 chkconfig httpd on
 chkconfig memcached on
@@ -335,6 +350,7 @@ keystone endpoint-create \
   --adminurl=http://controller:8776/v2/%\(tenant_id\)s
 
 service openstack-cinder-api start
+test cinder-api
 service openstack-cinder-scheduler start
 chkconfig openstack-cinder-api on
 chkconfig openstack-cinder-scheduler on
@@ -449,5 +465,6 @@ service openstack-nova-conductor restart
 
 service openvswitch restart
 service neutron-server start
+test Neutron
 chkconfig neutron-server on
 chkconfig openvswitch on
