@@ -38,7 +38,8 @@
         "AvailabilityZones" : { "Fn::GetAZs" : "" },
         "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
         "MinSize" : "1",
-        "MaxSize" : "3"
+        "MaxSize" : "3",
+        "VPCZoneIdentifier" : ["eb3239d1-c121-48c3-8464-d55fdd8843f1"]
       }
     },
     "ScaleUpPolicy": {
