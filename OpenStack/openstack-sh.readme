@@ -1,0 +1,31 @@
+ * 关于脚本：
+
+本脚本为一键 all in one 脚本，适用于 CentOS 6.3 x86_64 及以上版本（主要是为了开启IP NameSpace），
+强烈建议安装前执行 yum upgrade，
+更新内核后请重启机器，
+至少保证内核版本在 2.4 及以上以保证 iproute 的正确运行（IP NameSpace）。
+
+自动安装 keystone, Glance, Nova 控制和计算服务, Horizon, Cinder 控制服务, Neutron 控制、外网通讯和虚拟机网络。
+
+运行脚本时请保证网络连接良好，建议使用 root 账户执行脚本，所以密码将被设置为 123456，运行成功会在当前用户的主目录生成 keystonerc 文件。
+
+MySQL的密码请务必设置为123456。
+
+ * 关于网络：
+
+在 hosts 文件中将IP地址（建议内网，即 eth1 地址）对应好。
+
+默认 eth0 连接外网。
+
+修改 br-ex 的配置，同时 eth0 可以不需要地址；
+需要将eth0的类型修改。
+
+注意建立外网时使用 admin 登录，在 admin 页建立，选择“外部网络”，选择好正确的子网网段！
+
+默认使用的虚拟机类型为 kvm 。
+
+如果需要 Horzion 在外部使用，可以修改 256 行的 ALLOW_HOSTS 位置。
+
+配置 OVS 时要用准确的 IP 地址。
+
+想要观察 iptables 注意 IP NameSpace。
