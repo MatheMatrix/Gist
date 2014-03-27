@@ -108,7 +108,7 @@ chkconfig openvswitch on
 
 ovs-vsctl add-br br-int
 ovs-vsctl add-br br-ex
-ovs-vsctl add-port br-ex
+ovs-vsctl add-port br-ex eth0
 
 echo "
 DEVICE=br-ex
