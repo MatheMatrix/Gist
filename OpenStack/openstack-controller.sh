@@ -454,8 +454,8 @@ openstack-config --set /etc/nova/nova.conf DEFAULT \
 
 service openstack-nova-api restart
 
-sed -i "s/security_group_api = neutron/\
-# security_group_api = neutron/" /etc/nova/nova.conf
+# sed -i "s/security_group_api = neutron/\
+# # security_group_api = neutron/" /etc/nova/nova.conf
 
 ln -s /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini /etc/neutron/plugin.ini
 

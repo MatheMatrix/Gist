@@ -453,8 +453,12 @@ local_ip = 192.168.10.10' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.in
 
 ## GRE tunneling (END) ##
 
+# sed -i "/firewall_driver = neutron.agent.linux.iptables/a\
+# firewall_driver = neutron.agent.firewall.NoopFirewallDriver" \
+# /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+
 sed -i "/firewall_driver = neutron.agent.linux.iptables/a\
-firewall_driver = neutron.agent.firewall.NoopFirewallDriver" \
+firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver" \
 /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
 
 chkconfig neutron-openvswitch-agent on
@@ -517,8 +521,8 @@ openstack-config --set /etc/nova/nova.conf DEFAULT \
 openstack-config --set /etc/nova/nova.conf DEFAULT \
  security_group_api neutron
 
-sed -i "s/security_group_api = neutron/\
-# security_group_api = neutron/" /etc/nova/nova.conf
+# sed -i "s/security_group_api = neutron/\
+# # security_group_api = neutron/" /etc/nova/nova.conf
 
 service openstack-nova-compute restart
 
