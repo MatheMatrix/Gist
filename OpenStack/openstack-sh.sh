@@ -233,6 +233,9 @@ openstack-config --set /etc/nova/nova.conf DEFAULT glance_host controller
 
 openstack-config --set /etc/nova/nova.conf DEFAULT libvirt_type kvm
 
+openstack-config --set /etc/nova/nova.conf DEFAULT
+libvirt_vif_driver nova.virt.libvirt.vif.LibvirtHybridOVSBridgeDriver
+
 service libvirtd start
 service messagebus start
 chkconfig libvirtd on
@@ -450,6 +453,9 @@ enable_tunneling = True\
 integration_bridge = br-int\
 tunnel_bridge = br-tun\
 local_ip = 192.168.10.10' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+
+openstack-config --set /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini securitygroup
+firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 
 ## GRE tunneling (END) ##
 
