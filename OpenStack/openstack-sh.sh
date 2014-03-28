@@ -454,9 +454,6 @@ integration_bridge = br-int\
 tunnel_bridge = br-tun\
 local_ip = 192.168.10.10' /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
 
-openstack-config --set /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini securitygroup
-firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-
 ## GRE tunneling (END) ##
 
 # sed -i "/firewall_driver = neutron.agent.linux.iptables/a\
