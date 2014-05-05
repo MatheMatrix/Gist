@@ -9,7 +9,7 @@ import json
 
 post_data={
 "login_email":"wangweinoo1@gmail.com",
-"login_password":"wangwei",
+"login_password":"******",
 "domain":"mytrix.me",
 "format":"json"}
 
