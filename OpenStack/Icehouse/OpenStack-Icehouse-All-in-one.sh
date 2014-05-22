@@ -7,12 +7,6 @@
 
 # If updated kernel, please reboot first
 
-# Plese confirm your /etc/hosts
-# like this:
-# controller  192.168.10.10
-# network     192.168.10.11
-# compute1    192.168.10.12
-
 HOSTNAME=controller
 
 # Test installatiom model works
@@ -287,6 +281,24 @@ chkconfig openstack-nova-scheduler on
 chkconfig openstack-nova-conductor on
 chkconfig openstack-nova-novncproxy on
 
+# Nova-compute-install
+
+yum install -y openstack-nova-compute
+
+openstack-config --set /etc/nova/nova.conf \
+  DEFAULT novncproxy_base_url http://controller:6080/vnc_auto.html
+
+openstack-config --set /etc/nova/nova.conf DEFAULT glance_host controller
+
+# openstack-config --set /etc/nova/nova.conf libvirt virt_type qemu
+
+service libvirtd start
+service messagebus start
+chkconfig libvirtd on
+chkconfig messagebus on
+service openstack-nova-compute start
+chkconfig openstack-nova-compute on
+
 # Neutron-controller-install
 
 mysql -u root -p123456 -e"CREATE DATABASE neutron;
@@ -310,7 +322,8 @@ keystone endpoint-create \
      --adminurl http://controller:9696 \
      --internalurl http://controller:9696
 
-yum install -y openstack-neutron openstack-neutron-ml2 python-neutronclient
+yum install -y openstack-neutron openstack-neutron-ml2 \
+  python-neutronclient openstack-neutron-openvswitch
 
 openstack-config --set /etc/neutron/neutron.conf database connection \
    mysql://neutron:123456@controller/neutron
@@ -402,6 +415,37 @@ service openstack-nova-conductor restart
 service neutron-server start
 test Neutron
 chkconfig neutron-server on
+
+# Neutron-network-install
+
+openstack-config --set /etc/neutron/l3_agent.ini DEFAULT \
+  interface_driver neutron.agent.linux.interface.OVSInterfaceDriver
+openstack-config --set /etc/neutron/l3_agent.ini DEFAULT \
+  use_namespaces True
+
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT \
+  interface_driver neutron.agent.linux.interface.OVSInterfaceDriver
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT \
+  dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT \
+  use_namespaces True
+
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+  service_neutron_metadata_proxy true
+openstack-config --set /etc/nova/nova.conf DEFAULT \
+  neutron_metadata_proxy_shared_secret 123456
+
+service openstack-nova-api restart
+
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup \
+  firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup \
+  enable_security_group True
+
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup \
+  firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup \
+  enable_security_group True
 
 # Horizon-install
 
