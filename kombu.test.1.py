@@ -11,13 +11,13 @@ def process_media(body, message):
     message.ack()
 
 # Connection
-with Connection('amqp://guest@localhost//') as conn:
+conn = Connection('amqp://guest@localhost//')
 
-    # produce
-    producer = conn.Producer(serializer='json')
-    producer.publish({'name': '/tmp/locat1.avi', 'size': 1301013},
-        exchange = media_exchange, routing_key='video',
-        declare=[video_queue])
+# produce
+producer = conn.Producer(serializer='json')
+producer.publish('name',
+    exchange = media_exchange, routing_key='video',
+    declare=[video_queue])
 
     # # consume
     # with conn.Consumer(video_queue, callbacks=[process_media]) as consumer:
@@ -32,6 +32,35 @@ image_queue = Queue('image', exchange=media_exchange, key='image')
 with Connection('amqp://guest@localhost//') as conn:
     with conn.Consumer([video_queue, image_queue],
                             callbacks=[process_media]) as consumer:
-        while True:
-            print "I'm here"
-            conn.drain_events()
+        conn.drain_events()
+
+print "I'm here!!"
+
+producer.publish('woca',
+    exchange = media_exchange, routing_key='video',
+    declare=[video_queue])
+
+with Connection('amqp://guest@localhost//') as conn:
+    with conn.Consumer([video_queue, image_queue],
+                            callbacks=[process_media]) as consumer:
+        conn.drain_events()
+
+with Connection('amqp://guest@localhost//') as conn:
+    with conn.Consumer([video_queue, image_queue],
+                            callbacks=[process_media]) as consumer:
+        conn.drain_events()
+
+with Connection('amqp://guest@localhost//') as conn:
+    with conn.Consumer([video_queue, image_queue],
+                            callbacks=[process_media]) as consumer:
+        conn.drain_events()
+
+with Connection('amqp://guest@localhost//') as conn:
+    with conn.Consumer([video_queue, image_queue],
+                            callbacks=[process_media]) as consumer:
+        conn.drain_events()
+
+with Connection('amqp://guest@localhost//') as conn:
+    with conn.Consumer([video_queue, image_queue],
+                            callbacks=[process_media]) as consumer:
+        conn.drain_events()
