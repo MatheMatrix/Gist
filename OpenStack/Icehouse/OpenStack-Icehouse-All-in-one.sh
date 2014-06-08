@@ -447,6 +447,30 @@ openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup \
 openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup \
   enable_security_group True
 
+service openvswitch start
+chkconfig openvswitch on
+
+ovs-vsctl add-br br-int
+
+ovs-vsctl add-br br-ex
+
+ovs-vsctl add-port br-ex eth0
+ethtool -K eth0 gro off
+
+ln -s plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+
+cp /etc/init.d/neutron-openvswitch-agent /etc/init.d/neutron-openvswitch-agent.orig
+sed -i 's,plugins/openvswitch/ovs_neutron_plugin.ini,plugin.ini,g' /etc/init.d/neutron-openvswitch-agent
+
+service neutron-openvswitch-agent start
+service neutron-l3-agent start
+service neutron-dhcp-agent start
+service neutron-metadata-agent start
+chkconfig neutron-openvswitch-agent on
+chkconfig neutron-l3-agent on
+chkconfig neutron-dhcp-agent on
+chkconfig neutron-metadata-agent on
+
 # Horizon-install
 
 yum install -y memcached python-memcached mod_wsgi openstack-dashboard

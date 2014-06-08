@@ -15,7 +15,7 @@ module_dir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 sys.path.insert(0,module_dir) # 将当前的目录添加系统路径中去
 
 bind_host = "127.0.0.1"
-bind_port = 8080
+bind_port = 8081
 
 def server(app_name, conf_file):
     app = load_paste_app(app_name,conf_file) # 加载应用
