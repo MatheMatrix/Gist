@@ -44,23 +44,3 @@ with Connection('amqp://guest@localhost//') as conn:
     with conn.Consumer([video_queue, image_queue],
                             callbacks=[process_media]) as consumer:
         conn.drain_events()
-
-with Connection('amqp://guest@localhost//') as conn:
-    with conn.Consumer([video_queue, image_queue],
-                            callbacks=[process_media]) as consumer:
-        conn.drain_events()
-
-with Connection('amqp://guest@localhost//') as conn:
-    with conn.Consumer([video_queue, image_queue],
-                            callbacks=[process_media]) as consumer:
-        conn.drain_events()
-
-with Connection('amqp://guest@localhost//') as conn:
-    with conn.Consumer([video_queue, image_queue],
-                            callbacks=[process_media]) as consumer:
-        conn.drain_events()
-
-with Connection('amqp://guest@localhost//') as conn:
-    with conn.Consumer([video_queue, image_queue],
-                            callbacks=[process_media]) as consumer:
-        conn.drain_events()
