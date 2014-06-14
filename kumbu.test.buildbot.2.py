@@ -50,7 +50,7 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
         self.queues = {}
         self.producer = kombu.Producer(
             channel, exchange=self.exchange, auto_declare=False)
-        # NOTE(damon) auto_declrae often cause redeclare
+        # NOTE(damon) auto_declrae often cause redeclare and will cause error
         self.consumers = {}
 
     def setupExchange(self):
