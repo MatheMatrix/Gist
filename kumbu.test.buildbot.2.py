@@ -36,9 +36,8 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
         "buildrequest.$bsid.$builderid.$brid.cancelled",
         "buildrequest.$bsid.$builderid.$brid.complete"]
 
-    def __init__(self, master, conn):
+    def __init__(self, master, conn='amqp://guest:guest@localhost//'):
         # connection is a string and its default value:
-        # 'amqp://guest:guest@localhost//'
         base.MQBase.__init__(self, master)
         self.debug = False
         self.conn = kombu.Connection(connection)
@@ -52,13 +51,14 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
         self.producer = kombu.Producer(
             channel, exchange=self.exchange, auto_declare=False)
         # NOTE(damon) auto_declrae often cause redeclare
+        self.consumers = {}
 
     def setupExchange(self):
         try:
             self.exchange.declare()
         except amqp.exceptions.PreconditionFailed, e:
             log.msg(
-                "warnning: exchange buildbot already exist, " + 
+                "warnning: exchange buildbot already exist, " +
                 "this maybe casued by anomaly exit last time")
             # NOTE(damon) should we raise Exception here?
         else:
@@ -105,14 +105,29 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
                 return False
         return True
 
-    def produce(self, routingKey, on_ack):
+    def produce(self, routingKey, data):
         if self.debug:
             log.msg("MSG: %s\n%s" % (routingKey, pprint.pformat(data)))
         message = kombu.Message(self.channel, body=data)
         self.producer.publish(message.body, routing_key=routingKey)
+        # TODO(damon) default serializer is JSON, it doesn't support python's datetime
 
-    def regeristyConsumer(self, name, queues, key, durable=False):
-        pass
+    def regeristyConsumer(self, name, queues_name, callback, durable=False):
+        # queues_name can be a list of queues' names or one queue's name
+        # (list of strings or one string)
+        if type(queues) == list:
+            queues = self.getQueues(queues_name)
+        else:
+            queues = self.queues[queues_name]
+        if not name in self.conmusers:
+            self.consumers[name] = kombu.Consumer(
+                self.channel, queues, auto_declare=False)
+
+    def getQueues(self, queues_name):
+        queues = []
+        for name in queues_name:
+            queues.append(self.queues[name])
+        return queues
 
     def startConsuming(self):
         pass
