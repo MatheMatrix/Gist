@@ -122,6 +122,7 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
         if not name in self.conmusers:
             self.consumers[name] = kombu.Consumer(
                 self.channel, queues, auto_declare=False)
+            self.consumers[name].register_callback(callback)
 
     def getQueues(self, queues_name):
         queues = []
