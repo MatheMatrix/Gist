@@ -128,7 +128,8 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
                 "regeristy failed")
             if callback in self.consumer[key].callbacks:
                 log.msg(
-                "WARNNING: Consumer %s has been regeristy to callback %s " % (key, callback)
+                    "WARNNING: Consumer %s has been regeristy to callback %s "
+                     % (key, callback))
             else:
                 self.consumer[key].register_callback(callback)
         else:
