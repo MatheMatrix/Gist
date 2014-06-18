@@ -16,17 +16,16 @@
 import pprint
 import kombu
 import amqp.exceptions
+import threading
 
 from buildbot import config
 from buildbot.mq import base
-from buildbot.util import tuplematch
-from twisted.internet import defer
 from twisted.python import log
 
 
 class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
 
-    defaultRoutingKey = [
+    default_routingKey = [
         "scheduler.$schedulerid.started", "scheduler.$schedulerid.stopped",
         "builder.$builderid.started", "builder.$builderid.stopped",
         "buildset.$bsid.new", "buildset.$bsid.complete",
@@ -40,7 +39,7 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
         # connection is a string and its default value:
         base.MQBase.__init__(self, master)
         self.debug = False
-        self.conn = kombu.Connection(connection)
+        self.conn = kombu.Connection(conn)
         self.channel = conn.channel()
         self.exchange = kombu.Exchange(
             'buildbot', 'topic', channel=self.channel, durable=True)
@@ -52,13 +51,15 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
             channel, exchange=self.exchange, auto_declare=False)
         # NOTE(damon) auto_declrae often cause redeclare and will cause error
         self.consumers = {}
+        self.message_hub = KombuHub(self.conn)
+        self.message_hub.start()
 
     def setupExchange(self):
         try:
             self.exchange.declare()
         except amqp.exceptions.PreconditionFailed, e:
             log.msg(
-                "warnning: exchange buildbot already exist, " +
+                "WARNNING: exchange buildbot already exist, " +
                 "this maybe casued by anomaly exit last time")
             # NOTE(damon) should we raise Exception here?
         else:
@@ -72,12 +73,14 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
                                                                  new_config)
 
     def setupQueues(self):
-        for key in self.defaultRoutingKey:
+        # NOTE(damon) discarded
+        for key in self.default_routingKey:
             standardized_key = self.standardizeKey(key)
             if self._checkKey(key) == False:
                 self.regeristyQueue(key)
 
     def standardizeKey(self, key):
+        # NOTE(damon) discarded
         standardized_key = ""
         key = key.split(".")
         for part in key:
@@ -86,7 +89,9 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
             else:
                 standardized_key += part
 
-    def regeristyQueue(self, name, key, durable=False):
+    def regeristyQueue(self, key, name=None, durable=False):
+        if name == None:
+            name = key
         if self._checkKey(key) == True:
             # NOTE(damon) check for if called by other class
             self.queues[name] = kombu.Queue(
@@ -95,11 +100,12 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
             self.queues[name].declare()
         else:
             log.msg(
-                "ERROR: Routing Key %d has been used by, regeristy queue failed" % key)
-            raise Exception("ERROR: Routing Key %d has been used" % key)
+                "ERROR: Routing Key %s has been used by, regeristy queue failed" % key)
+            raise Exception("ERROR: Routing Key %s has been used" % key)
             # NOTE(damon) should raise an exception here?
 
     def _checkKey(self, key):
+        # check whether key already in queues
         for queue in self.queues:
             if queue.routing_key == key:
                 return False
@@ -108,13 +114,17 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
     def produce(self, routingKey, data):
         if self.debug:
             log.msg("MSG: %s\n%s" % (routingKey, pprint.pformat(data)))
+        key = self.formatKey(routingKey)
         message = kombu.Message(self.channel, body=data)
-        self.producer.publish(message.body, routing_key=routingKey)
+        self.producer.publish(message.body, routing_key=key)
         # TODO(damon) default serializer is JSON, it doesn't support python's datetime
 
-    def regeristyConsumer(self, name, queues_name, callback, durable=False):
+    def regeristyConsumer(self, queues_name, callback, name=None, durable=False):
         # queues_name can be a list of queues' names or one queue's name
         # (list of strings or one string)
+        if name == None:
+            name = queues_name
+
         if type(queues) == list:
             queues = self.getQueues(queues_name)
         else:
@@ -130,5 +140,57 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
             queues.append(self.queues[name])
         return queues
 
-    def startConsuming(self):
-        pass
+    def startConsuming(self, callback, routingKey, persistent_name=None):
+        key = formatKey(routingKey)
+
+        try:
+            queue = self.queues[key]
+        except:
+            self.regeristyQueue(key)
+            queue = self.queues[key]
+
+        if key in self.consumer.keys():
+            log.msg(
+                "WARNNING: Consumer's Routing Key %s has been used by, " % key + 
+                "regeristy failed")
+            if callback in self.consumer[key].callbacks:
+                log.msg(
+                "WARNNING: Consumer %s has been regeristy to callback %s " % (key, callback)
+            else:
+                self.consumer[key].register_callback(callback)
+        else:
+            self.regeristyConsumer(key, callback)
+
+    def formatKey(self, key):
+        # transform key from a tuple to a string with standard routing key's format
+        result = ""
+        for item in key:
+            if item == None:
+                result += "*."
+            else:
+                result += item + "."
+
+        return result[:-1]
+
+    def __exit__(self):
+        self.message_hub.__exit__()
+        for queue in self.queues:
+            queue.delete(nowait=True)
+        self.exchange.delete(nowait=True)
+        self.conn.release()
+
+class KombuHub(threading.Thread):
+    """Message hub to handle message asynchronously by start a another thread"""
+
+    def __init__(self, conn):
+        threading.Thread.__init__(self)
+        self.conn = conn
+        self.hub = kombu.async.Hub()
+
+        self.conn.register_with_event_loop(self.hub)
+
+    def run(self):
+        self.hub.run_forever()
+
+    def __exit__(self):
+        self.hub.stop()
