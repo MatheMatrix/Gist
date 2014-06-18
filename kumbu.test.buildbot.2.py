@@ -41,10 +41,6 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
         self.debug = False
         self.conn = kombu.Connection(conn)
         self.channel = conn.channel()
-        self.exchange = kombu.Exchange(
-            'buildbot', 'topic', channel=self.channel, durable=True)
-        # NOTE(damon) if durable = false, durable queue will cant bind to this
-        # exchange
         self.setupExchange()
         self.queues = {}
         self.producer = kombu.Producer(
@@ -55,6 +51,10 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
         self.message_hub.start()
 
     def setupExchange(self):
+        self.exchange = kombu.Exchange(
+            'buildbot', 'topic', channel=self.channel, durable=True)
+        # NOTE(damon) if durable = false, durable queue will cant bind to this
+        # exchange
         try:
             self.exchange.declare()
         except amqp.exceptions.PreconditionFailed, e:
