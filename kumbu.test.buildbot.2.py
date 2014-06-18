@@ -25,16 +25,6 @@ from twisted.python import log
 
 class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
 
-    default_routingKey = [
-        "scheduler.$schedulerid.started", "scheduler.$schedulerid.stopped",
-        "builder.$builderid.started", "builder.$builderid.stopped",
-        "buildset.$bsid.new", "buildset.$bsid.complete",
-        "buildrequest.$bsid.$builderid.$brid.new",
-        "buildrequest.$bsid.$builderid.$brid.claimed",
-        "buildrequest.$bsid.$builderid.$brid.unclaimed",
-        "buildrequest.$bsid.$builderid.$brid.cancelled",
-        "buildrequest.$bsid.$builderid.$brid.complete"]
-
     def __init__(self, master, conn='amqp://guest:guest@localhost//'):
         # connection is a string and its default value:
         base.MQBase.__init__(self, master)
@@ -71,23 +61,6 @@ class KombuMQ(config.ReconfigurableServiceMixin, base.MQBase):
         self.debug = new_config.mq.get('debug', False)
         return config.ReconfigurableServiceMixin.reconfigService(self,
                                                                  new_config)
-
-    def setupQueues(self):
-        # NOTE(damon) discarded
-        for key in self.default_routingKey:
-            standardized_key = self.standardizeKey(key)
-            if self._checkKey(key) == False:
-                self.regeristyQueue(key)
-
-    def standardizeKey(self, key):
-        # NOTE(damon) discarded
-        standardized_key = ""
-        key = key.split(".")
-        for part in key:
-            if part[0] == "$":
-                return standardized_key + ".#"
-            else:
-                standardized_key += part
 
     def regeristyQueue(self, key, name=None, durable=False):
         if name == None:
