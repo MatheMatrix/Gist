@@ -20,7 +20,23 @@ task_exchange.declare()
 # 在这里进行了exchange和queue的绑定，并且指定了这个queue的routing_key
 task_queue = Queue('piap', task_exchange, channel=channel,
                    routing_key='suo_piao.#', durable=False)
+task_queue2 = Queue('piap2.*abc.#', task_exchange, channel=channel,
+                   routing_key='suo_piao.#', durable=False)
+task_queue3 = Queue('piap3', task_exchange, channel=channel,
+                   routing_key='suo_piao.abc.#', durable=False)
+task_queue4 = Queue('piap4', task_exchange, channel=channel,
+                   routing_key='abc.#', durable=False)
+task_queues = []
+for x in xrange(1,10):
+  tmpQueue = Queue('testFlood'+str(x), task_exchange, channel=channel,
+                   routing_key='abc.*.'+str(x), durable=False)
+  tmpQueue.declare()
+  task_queues.append(tmpQueue)
+
 task_queue.declare()
+task_queue2.declare()
+task_queue3.declare()
+task_queue4.declare()
 
 message = Message(channel, body=
     {'state_strings': [u'pending'], 'stepid': 1, 'complete_at': None, 
@@ -101,15 +117,6 @@ class myThread (threading.Thread):
 
 thread = myThread()
 thread.start()
-
-print "a"
-print "b"
-
-print "c"
-
-print "d"
-
-print "e"
 
 time.sleep(3)
 thread.__exit__()
