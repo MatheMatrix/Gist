@@ -484,7 +484,7 @@ CACHES = {\
 }/}" /etc/openstack-dashboard/local_settings
 
 sed -i "s/ALLOWED_HOSTS = \['horizon.example.com', 'localhost'\]/\
-ALLOWED_HOSTS = ['localhost', 'my-desktop', 'controller']/g" /etc/openstack-dashboard/local_settings
+ALLOWED_HOSTS = ['42.62.73.234', localhost', 'my-desktop', 'controller']/g" /etc/openstack-dashboard/local_settings
 
 # Edit /etc/openstack-dashboard/local_settings and change OPENSTACK_HOST to the hostname of your Identity Service:
 # OPENSTACK_HOST = "controller"
